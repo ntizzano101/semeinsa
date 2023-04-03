@@ -253,7 +253,7 @@
                             </div>
                             <br>
                             
-                            <label for="intImpExto">Importe excento</label>
+                            <label for="intImpExto">Importe exento</label>
                             <input type="text" name="intImpExto" id="intImpExto" class="form-control"/>
                             <div id="errIntImpExto">
                                 <small><font color="red">

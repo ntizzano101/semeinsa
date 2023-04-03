@@ -26,8 +26,8 @@ class Facturas_model extends CI_Model {
     public function lista_comprobantes($id_empresa,$id_proveedor)
         {
             $sql="SELECT DISTINCT id, cod_afip, cod_afip_t FROM cod_afip".
-            " WHERE id_iva=(SELECT cond_iva FROM empresas WHERE id_empresa=?)".
-            " AND id_iva_compra=(SELECT iva FROM proveedores WHERE id=?)".
+            " WHERE id_iva=(SELECT iva FROM proveedores WHERE id=?)".
+            " AND id_iva_compra=(SELECT cond_iva FROM empresas WHERE id_empresa=?)".
             "  ORDER BY cod_afip";
             $retorno=$this->db->query($sql, array($id_empresa, $id_proveedor))->result();
             return $retorno;
