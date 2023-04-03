@@ -110,7 +110,7 @@ class Ajax extends CI_Controller {
         foreach ($mtzItems as $fl) {
             ++$i;
             if($fl["txiva"]=="Exento"){
-                $fl["prcu"]=sprintf("%.2f",$fl["prcu"] * 1.21);
+                $fl["prcu"]=sprintf("%.2f",$fl["prcu"] );
                 $fl["total"]=sprintf("%.2f",$fl["prcu"] * $fl["cant"]);
             }
             else 
