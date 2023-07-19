@@ -29,7 +29,7 @@ class Facturas_model extends CI_Model {
             " WHERE id_iva=(SELECT iva FROM proveedores WHERE id=?)".
             " AND id_iva_compra=(SELECT cond_iva FROM empresas WHERE id_empresa=?)".
             "  ORDER BY cod_afip";
-            $retorno=$this->db->query($sql, array($id_empresa, $id_proveedor))->result();
+            $retorno=$this->db->query($sql, array($id_proveedor,$id_empresa))->result();           
             return $retorno;
         }    
         
