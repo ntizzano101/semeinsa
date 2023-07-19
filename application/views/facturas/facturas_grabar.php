@@ -457,7 +457,7 @@ $(document).ready(function(){
         }else{
             $.post(CFG.url + 'Ajax/busca_tp_comprob/',
             {proveedor:$(this).val(),empresa:$("#empresa").val()},
-            function(data){
+            function(data){               
                 $("#cod_afip").html(data.combo);
                 $("#errCod_afip").html("");
             });
