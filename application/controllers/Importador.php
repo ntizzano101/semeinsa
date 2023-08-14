@@ -62,7 +62,7 @@ class Importador extends CI_Controller {
             if(in_array($ob->tipo,array('011','012','013'))){$ob->iva=6;$ob->letra='C';}else{$ob->iva=1;$ob->letra='A';}
             $ob->pto=$pto;
             $ob->nro=$nro;            
-            $ob->cuit=substr($cuit,0,2).'-'.substr($cuit,2,8).'-'.substr($cuit,8,1);
+            $ob->cuit=substr($cuit,0,2).'-'.substr($cuit,2,8).'-'.substr($cuit,10,1);
             $ob->nombre=$nombre;
             $ob->total=$total/100;
             $ob->nogra=$nogra/100;
@@ -77,6 +77,7 @@ class Importador extends CI_Controller {
             $this->importador_model->inserto_factura_compra($ob); 
         }
         }
+     
         //Alicuotas        
         $f=fopen($a[1],'r');
         while(!feof($f)){

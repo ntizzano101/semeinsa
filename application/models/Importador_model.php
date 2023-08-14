@@ -59,7 +59,12 @@ class Importador_model extends CI_Model {
                 $ob->otrosimp,
                 $ob->nogra));                               
         }        
+        $cad="update facturas set id_tipo_comp=(select  id from cod_afip where id_iva_compra=1 and cod_afip_t='".$ob->tipo."' limit 1) 
+        where id_proveedor=". $ob->id_proveedor   ." and 
+        puerto=".   $ob->pto." and numero=".$ob->nro." and codigo_comp='". $ob->tipo ."'";
+        $x=$this->db->query($cad);
         return 0;
+
     }
     public function inserto_factura_compra_ali($ali){
         $sql="update facturas set neto=neto+" . $ali->neto ." , iva=iva+". $ali->impuesto ."," ;
@@ -77,7 +82,8 @@ class Importador_model extends CI_Model {
         $sql=$sql.$cad . " where 
         puerto=".$ali->pto." and numero=".$ali->nro." and cod_afip='".$ali->tipo."' and 
          id_proveedor=(select id_proveedor from proveedores where cuit='".$ali->cuit."')";
-      $this->db->query($sql);   
+      
+      $x=$this->db->query($sql);
     }
     public function lista_proveedores()
         {

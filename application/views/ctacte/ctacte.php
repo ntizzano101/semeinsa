@@ -35,15 +35,17 @@
                   </thead>
                   <tbody>
                         <?php 
-                        foreach($ctactes as $cta){ ?>	
+                        $total=0;
+                        foreach($ctactes as $cta){ 
+                            $total=$total + $cta->debe - $cta->haber ;
+                            ?>	
                                 <tr>
                                     <td><?=$cta->fecha ?></td>
                                     <td><?=$cta->id ?></td>
-                                    <td><?=number_format($cta->debe,2,",","")?></td>
-                                    <td><?=number_format($cta->haber,2,",","")?></td>
-                                    <td><?=number_format($cta->total,2,",","")?></td>
-                                    <td>
-                                        
+                                    <td><?=number_format($cta->debe,2,".",",")?></td>
+                                    <td><?=number_format($cta->haber,2,".",",")?></td>
+                                    <td><?=number_format($total,2,".",",")?></td>
+                                    <td>                                        
                                      </td>
                                 </tr>
                         <?php	
