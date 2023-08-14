@@ -71,7 +71,7 @@ class Facturas_model extends CI_Model {
         {
             $sql="SELECT a.id_factura AS id".
                 ", DATE_FORMAT(a.fecha, '%d/%m/%Y') AS fecha".
-                ", b.proveedor".
+                ", b.proveedor,a.codigo_comp,a.puerto,a.numero,a.total".
                 " FROM facturas a".
                 " INNER JOIN proveedores b ON a.id_proveedor=b.id".
                 " WHERE TRUE ";
@@ -97,7 +97,7 @@ class Facturas_model extends CI_Model {
                 }
                 $sql.=" ORDER BY a.fecha DESC, b.proveedor";
             }else{
-                $sql.=" ORDER BY a.fecha DESC, b.proveedor LIMIT 10 ";
+                $sql.=" ORDER BY a.fecha DESC, b.proveedor ";
             }
             
             //echo $sql;
