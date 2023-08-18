@@ -267,6 +267,17 @@ class Ajax extends CI_Controller {
        $this->send($resp);        
         
    }
+   public function medio_pago() {
+                $id=$this->input->post('id');          
+                $this->load->model('ventas_model');           
+                $rta=$this->ventas_model->medio_pago($id);  
+                $data = new stdClass();       
+                $data->nombre= $rta;     
+                $resp=json_decode(json_encode($data), true);
+                $this->send($resp);        
+    
+}
+
    private function send($array) {
 
     if (!is_array($array)) return false;

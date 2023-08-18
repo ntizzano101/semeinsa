@@ -41,7 +41,41 @@ class Ctacte_model extends CI_Model {
             
             $retorno=$this->db->query($sql, array($id_prov, $id_prov))->result();
             return $retorno;
-        }        
+        } 
+    public function comp_adeudados($id_prov){
+        $sql=" SELECT DATE_FORMAT(fac.fecha,'%d/%m/%Y') AS fecha, fac.id_factura
+        ,fac.numero,fac.puerto,fac.codigo_comp,fac.tipo_comp,
+        fac.total , fac.total - ifnull(sum(opf.monto),0) as saldo,fac.letra
+        FROM facturas fac left join opago_facturas opf on fac.id_factura = opf.id_factura
+        WHERE fac.id_proveedor=? 
+        GROUP BY fac.fecha,fac.id_factura,fac.total,fac.numero,fac.puerto,fac.codigo_comp,fac.tipo_comp,fac.letra
+        ORDER BY fac.fecha";    
+    $retorno=$this->db->query($sql, array($id_prov))->result();
+    return $retorno;
+    }           
+    public function medios_pago(){        
+        return $this->db->query("SELECT * from mpagos order by id ")->result();            
+    }           
           
+    public function ingreso_pago_efectivo($importe,$comentario,$id_aux){    
+        return $this->db->query("insert into opago_pago(id_pago,monto,id_medio_pago,observaciones)
+        values(?,?,?,?)",array($id_aux,$importe,1,$comentario,));   
+    }   
+    
+    public function recalcular($id_aux){
+        return $this->db->query("SELECT op.id,op.monto,m.mpago,
+        ifnull(op.nro_comprobante,'') as comp ,ifnull(op.observaciones,'') as obs,
+        ifnull(c_banco_compro,'') as comp_banco,
+        ifnull(c.numero,'') as che_nume, ifnull(c.vence,'') as che_vence 
+         from opago_pago op 
+         inner join mpagos m on op.id_medio_pago=m.id
+         left join cheques c  on c.id=op.id_cheque
+         left join bancos b on  b.id=id_c_banco         
+         where id_pago=?",array($id_aux))->result();            
+    }
+    public function borro_opago_aux($id){
+        return $this->db->query("delete from opago_pago where id=? ",array($id));
+    }
+
 }
 ?>

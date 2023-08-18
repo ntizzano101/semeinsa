@@ -227,6 +227,14 @@ class Ventas_model extends CI_Model {
         return $retorno;
      }
 
+     public function medio_pago($id){
+        $sql="SELECT i.mpago 
+                FROM  mpagos i where  id=?"  ;
+        $retorno=$this->db->query($sql, array($id))->row();
+        return $retorno;
+     }
+
+
     public function guardar($obj)
         {   
         $usuario=$_SESSION["id"];
