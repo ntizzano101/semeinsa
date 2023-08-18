@@ -82,9 +82,10 @@ class Ctacte extends CI_Controller {
         $data = new stdClass();  
         $data->tabla="";        
         $x=$this->ctacte_model->recalcular($id_aux);                                             
-        $t="";
-        foreach($x as $y){
-             $t=$t.'<tr>
+        $t="";        
+        $total=0;
+        foreach($x as $y){          
+            $t=$t.'<tr>
              <td><button type="button" class="btn btn-danger" onClick="borro('.$y->id.')">X</button>
              '.$y->mpago.'</td>
              <td>'.$y->monto.'</td>
@@ -94,12 +95,62 @@ class Ctacte extends CI_Controller {
              <td>'.$y->che_nume.'</td>
              <td>'.$y->che_vence.'</td>
              </tr>'     ;
-        }        
-        $data->tabla=$t;
+             $total=$total+$y->monto;
+        }                
+        $fin="";
+        if($t!=""){
+            $fin='<tr><td><button type="button" class="btn btn-success" onClick="guardar()">Finalizar OP</button>
+            </td>
+            <td colspan="7">'.$total.'</td>            
+            </tr>'     ;
+        }
+        $data->tabla=$t.$fin;
         $resp=json_decode(json_encode($data), true);  
         $this->send($resp);     
         exit;
     }
+public function ingreso_pago_cheque3(){
+
+    $id_aux=$this->input->post('id_aux');    
+    $che3_nro=$this->input->post('che3_nro');    
+    $che3_banco=$this->input->post('che3_banco');    
+    $che3_fecha=$this->input->post('che3_fecha');    
+    $che3_importe=$this->input->post('che3_importe');    
+    $che3_cliente=$this->input->post('che3_cliente');     
+    $data = new stdClass();
+    $data->rta="";
+    if(!(abs($che3_importe)< 9999999999 and $che3_importe!='' and $che3_importe!=0)){
+        $data->rta="Importe Del Cheque no es Valido";
+    }
+    if(strlen($che3_nro)<5){$data->rta="Numero de Cheque No Valido";}
+    if(strlen($che3_cliente)<5){$data->rta="Cliente del Cheque No Valido";}       
+    if($data->rta==""){
+        $this->load->model('ctacte_model');       
+        $cheque = new stdClass();
+        $cheque->id=0;
+        $cheque->numero=$che3_nro;
+        $cheque->cliente=$che3_cliente;
+        $cheque->banco=$che3_banco;
+        $cheque->propio=0;
+        $cheque->importe=$che3_importe;
+        $cheque->vence=$che3_fecha;
+        $cheque->emision='01-01-1900';
+        $ob2 = new stdClass();
+        $ob2->id=0;
+        $ob2->id_pago=$id_aux;
+        $ob2->monto=$che3_importe;
+        $ob2->id_c_banco=0;
+        $ob2->c_banco_compro='';
+        $ob2->id_cheque=0;
+        $ob2->id_medio_pago=2;
+        $ob2->nro_comprobante='';
+        $ob2->observaciones='';
+        $x=$this->ctacte_model->ingreso_pago_cheque3($cheque,$ob2);                                             
+    }
+    $resp=json_decode(json_encode($data), true);  
+    $this->send($resp);     
+    exit;    
+}
     public function borro_opago_aux(){
         $this->load->model('ctacte_model');       
         $id_aux=$this->input->post('id_aux');        

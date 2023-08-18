@@ -76,6 +76,11 @@ class Ctacte_model extends CI_Model {
     public function borro_opago_aux($id){
         return $this->db->query("delete from opago_pago where id=? ",array($id));
     }
+public function ingreso_pago_cheque3($ob,$ob2){
+    $this->db->insert('cheques',$ob);
+    $ob2->id_cheque=$this->db->insert_id();   
+    $this->db->insert('opago_pago',$ob2);
 
+}
 }
 ?>

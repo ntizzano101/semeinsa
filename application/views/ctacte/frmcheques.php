@@ -14,31 +14,33 @@
                     
                     <div class="col-md-8">  
                         
-                       
+                    <div class="row">    
+                            <p class="text-danger" id="che3Error"></p>
+                        </div> 
                         
                         <div class="row">
                             <label for="itemCod">Numero</label>
-                            <input type="text" name="che_rio" id="che_nro" class="form-control"/> 
+                            <input type="text" name="che_rio" id="che3_nro" class="form-control"/> 
                         </div>
                        
                         <div class="row">
                             <label for="itemPrcU">Banco</label>
-                            <input type="text" name="itemPrcU" id="che_banco" class="form-control"/> 
+                            <input type="text" name="itemPrcU" id="che3_banco" class="form-control"/> 
                         </div>
 
                         <div class="row">
                             <label for="itemPrcU">Fecha Vto</label>
-                            <input type="date" name="itemPrcU" id="che_fecha" class="form-control"/> 
+                            <input type="date" name="itemPrcU" id="che3_fecha" class="form-control"/> 
                         </div>
 
                         <div class="row">
                             <label for="itemPrcU">Cliente</label>
-                            <input type="text" name="itemPrcU" id="che_Cliente" class="form-control"/> 
+                            <input type="text" name="itemPrcU" id="che3_cliente" class="form-control"/> 
                         </div>
 
                         <div class="row">
                             <label for="itemPrcU">Importe</label>
-                            <input type="text" name="itemPrcU" id="che_importe" class="form-control"/> 
+                            <input type="text" name="itemPrcU" id="che3_importe" class="form-control"/> 
                         </div>
 
                         
@@ -53,7 +55,7 @@
             <!-- Modal footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" id="bntIngEfe">Ingresar</button>
+                <button type="button" class="btn btn-success" id="bntIngChe3">Ingresar</button>
                     
                 </a>
             </div>
