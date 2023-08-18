@@ -185,7 +185,29 @@ var CFG = {
             });           
             
         });
-
+        /*Cheque de terceros*/
+        $("#bntIngChe3").click(function(){              
+            $.post(CFG.url + 'ctacte/ingreso_pago_cheque3/',
+            {id_aux:$("#id_pago_aux").val(),
+             che3_nro:$("#che3_nro").val(),
+             che3_banco:$("#che3_banco").val(),
+             che3_fecha:$("#che3_fecha").val(),
+             che3_importe:$("#che3_importe").val(),
+             che3_cliente:$("#che3_cliente").val(),
+            },
+            function(data){   
+                alert(data)                                ;
+               if(data.rta==""){
+                $("#cheque").modal("hide");
+                recalcular();
+                        
+               }
+               else{
+                $("#che3Error").html(data.rta);
+               }                             
+            });           
+            
+        });
 
     });
     function recalcular(){
