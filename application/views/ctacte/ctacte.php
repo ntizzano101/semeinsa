@@ -41,10 +41,15 @@
                             ?>	
                                 <tr>
                                     <td><?=$cta->fecha ?></td>
-                                    <td><?=$cta->id ?></td>
+                                    <td><?=$cta->descrip ?></td>
                                     <td><?=number_format($cta->debe,2,".",",")?></td>
                                     <td><?=number_format($cta->haber,2,".",",")?></td>
                                     <td><?=number_format($total,2,".",",")?></td>
+                                    <td><?php if($cta->tt=='O'){
+                                        echo '  <a class="btn-default fa fa-eraser" onClick="borro('.$cta->id.')"></span></a>
+                                        <a class="btn-default fa fa-eye" onClick"=ver('.$cta->id.')"></span></a>';}
+                                        else{echo '  <a class="btn-default fa fa-eye" onClick"=ver('.$cta->id.')"></span></a>';}
+                                     ?></td>
                                     <td>                                        
                                      </td>
                                 </tr>
