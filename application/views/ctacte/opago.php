@@ -252,10 +252,10 @@ var CFG = {
             $.post(CFG.url + 'ctacte/ingreso_pago_traf/',
             {id_aux:$("#id_pago_aux").val(),             
              tra_banco:$("#tra_banco").val(),
-             tra_comp:$("#tra_comprobante").val(),
+             tra_comp:$("#tra_comentario").val(),
              tra_importe:$("#tra_importe").val()             
             },
-            function(data){                   
+            function(data){                                
                if(data.rta==""){
                 $("#transferencia").modal("hide");
                 recalcular();
