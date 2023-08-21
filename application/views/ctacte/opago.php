@@ -1,3 +1,4 @@
+<?php $this->load->helper('form'); ?>
 <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /> 
 <style>
 .container a:hover, a:visited, a:link, a:active{
@@ -6,19 +7,22 @@
 </style>
 
 <div class="container">
-    <div class="row">
+    <div class="row"  id="terminado">
+        <div class="col-md-12">   
+            <a class="btn btn-primary" href="<?php echo base_url(); ?>ctacte/ctacte/<?=$proveedor->id?>">Se Grabo la Orden de pago Corectamente</a>
+        </div>
+    </div>
+
+    <div class="row" id="principal">
         <div class="col-md-12">
-            <div class="panel panel-danger">
-                <div class="panel-heading">FACTURAS IMPAGAS - <?=$proveedor->proveedor?></div>
-                <input type="hidden" id="id_pago_aux" value="<?php echo rand(1,6000) * -1  ?>">
-                <?php if(isset($mensaje)){?>
-                <div class="row">
-                    <div class="col-md-12">
-                        <?=$mensaje?>
+                    <div class="alert alert-danger" id="alerta">
+                    <strong>Error</strong> <span id="finError">  </span>
                     </div>
-                </div>
-                <?php }?>             
-                
+            <div class="panel panel-default">            
+                <div class="panel-heading">FACTURAS IMPAGAS - <?=$proveedor->proveedor?></div>
+                <input type="hidden" id="id_proveedor" value="<?=$proveedor->id?>>">                        
+                <input type="hidden" id="resto" value="0.00">                        
+                <input type="hidden" id="id_pago_aux" value="<?=$id_opago?>">                         
                 <table class="table">
                   <thead>
                         <tr>
@@ -33,6 +37,8 @@
                         $total=0;
                         $i=0;
                         foreach($deuda as $cta){ 
+                            if($cta->tipo_comp==3)
+                                 $cta->saldo=$cta->saldo *-1;               
                             $total=$total + $cta->saldo ;                           
                             ?>	
                                 <tr>
@@ -40,9 +46,8 @@
                                     <td><?=$cta->letra." (".  $cta->codigo_comp . ") " . $cta->puerto . " -  " . $cta->numero ?></td>
                                     <td><?=number_format($cta->total,2,".",",")?></td>
                                     <input type="hidden" name="compr[<?=$i?>][id_comp]" value="<?=$cta->id_factura?>">
-                                    <td align="right"><input style="text-align:right" type="text"  name="compr[<?=$i?>][saldo]" value="<?=$cta->saldo?>"></td>
-                                    
-                                    
+                                    <input type="hidden" name="compr[<?=$i?>][saldo]" value="<?=$cta->saldo?>">
+                                    <td align="right"><input style="text-align:right" type="text"  name="compr[<?=$i?>][paga]" value="<?=$cta->saldo;?>"></td>
                                 </tr>
                         <?php	
                          $i++;
@@ -50,7 +55,8 @@
                         ?>
                          <tr>
                                     <td colspan="3">Total Adeudado</td>                                    
-                                    <td align="right"><?=number_format($total,2,".",",")?></td>                                                                        
+                                    <td align="right"><?=number_format($total,2,".",",")?></td>
+                                    <input type="hidden" id="deudor" value="<?=$total?>">                                                                                                
                                     <input type="hidden" id="cantcomp" name="cantcomp" value="<?=$i?>">
                                 </tr>
                   </tbody>
@@ -82,9 +88,17 @@
                   </thead>
                   <tbody>
                   <tr>
-                                    <td><?=$combo ?>                                                        </td>
-                                    <td><button type="button" class="btn btn-success" id="ingreso">Seleccionar</button>
-                                    </td>
+                        <td><?=$combo ?></td>
+                        <td><button type="button" class="btn btn-success" id="ingreso">Seleccionar</button>
+                        </td>
+                </tr>
+                 <tr>                    
+                 <td>      
+                 <label for="itemPrcU">Fecha de La Orden De Pago</label>
+                </td>
+                <td>
+                          <input type="date" name="itemPrcU" id="opagofecha" class="form-control"/> 
+                </td>
                  </tr>
                  
                                                         
@@ -121,6 +135,7 @@
     $this->load->view('ctacte/frmEfectivo');
     $this->load->view('ctacte/frmTransferencia');
     $this->load->view('ctacte/frmcheques');    
+    $this->load->view('ctacte/frmchequespro');    
     $this->load->view('ctacte/frmOtroPago');  
     ?>  
     
@@ -138,7 +153,8 @@ var CFG = {
                     $('input:hidden[name="token"]').val(result.token);
                     $.ajaxSetup({data: {token: result.token}});
                 });
-
+        $("#alerta").hide();  
+        $("#terminado").hide();        
         $("#ingreso").click(function(){                        
             $.post(CFG.url + 'Ajax/medio_pago/',
             {id:$("#combo").val()},
@@ -158,7 +174,10 @@ var CFG = {
                     break;
             case '9':
                 $("#transferencia").modal("show");                
-                    break;        
+                    break;   
+            case '6':
+                $("#chequepro").modal("show");                
+                    break;                
             default:                
                 $("#otro").modal("show");         
             }
@@ -195,8 +214,7 @@ var CFG = {
              che3_importe:$("#che3_importe").val(),
              che3_cliente:$("#che3_cliente").val(),
             },
-            function(data){   
-                alert(data)                                ;
+            function(data){                 
                if(data.rta==""){
                 $("#cheque").modal("hide");
                 recalcular();
@@ -208,7 +226,70 @@ var CFG = {
             });           
             
         });
+        /*cheque propio*/   
+        $("#bntIngChe").click(function(){                   
+            $.post(CFG.url + 'ctacte/ingreso_pago_cheque/',
+            {id_aux:$("#id_pago_aux").val(),
+             che_nro:$("#che_nro").val(),
+             che_banco:$("#che_banco").val(),
+             che_fecha:$("#che_fecha").val(),
+             che_importe:$("#che_importe").val()             
+            },
+            function(data){                   
+               if(data.rta==""){
+                $("#chequepro").modal("hide");
+                recalcular();
+                        
+               }
+               else{
+                $("#cheError").html(data.rta);
+               }                             
+            });           
+            
+        });
+        /*trasnfe*/
+        $("#bntIngTra").click(function(){                   
+            $.post(CFG.url + 'ctacte/ingreso_pago_traf/',
+            {id_aux:$("#id_pago_aux").val(),             
+             tra_banco:$("#tra_banco").val(),
+             tra_comp:$("#tra_comprobante").val(),
+             tra_importe:$("#tra_importe").val()             
+            },
+            function(data){                   
+               if(data.rta==""){
+                $("#transferencia").modal("hide");
+                recalcular();
+                        
+               }
+               else{
+                $("#traError").html(data.rta);
+               }                             
+            });           
+            
+        });
 
+        /*otros*/
+        $("#bntIngOtr").click(function(){                   
+            $.post(CFG.url + 'ctacte/ingreso_pago_otro/',
+            {id_aux:$("#id_pago_aux").val(),             
+             otr_comen:$("#otr_comentario").val(),             
+             otr_importe:$("#otr_importe").val(),             
+             otr_tipo:$("#combo").val(),             
+            },
+            function(data){ 
+                
+               if(data.rta==""){
+                $("#otro").modal("hide");
+                recalcular();
+                        
+               }
+               else{
+                $("#otrError").html(data.rta);
+               }                             
+            });           
+            
+        });
+        recalcular();    
     });
     function recalcular(){
         $.post(CFG.url + 'ctacte/recalcular/',
@@ -224,5 +305,35 @@ var CFG = {
                 recalcular();
             });           
     }
+    function guardar(){
+        var cancela='';
+        for(i=0;i<$("#cantcomp").val();i++){
+            if(cancela=='')
+                cancela=$("input[name='compr["+i+"][id_comp]']").val() + "_" + $("input[name='compr["+i+"][saldo]']").val() +"_"+$("input[name='compr["+i+"][paga]']").val();
+            else
+                cancela=cancela+";"+$("input[name='compr["+i+"][id_comp]']").val() + "_" + $("input[name='compr["+i+"][saldo]']").val() +"_"+$("input[name='compr["+i+"][paga]']").val();
+        }   
+        $("#alerta").hide();   
+        $.post(CFG.url + 'ctacte/finalizar_opago/',
+            {id_aux:$("#id_pago_aux").val(),             
+             compro:cancela,
+             id_proveedor:$("#id_proveedor").val(),             
+             opagofecha:$("#opagofecha").val(),
+             total_fin:$("#total_fin").val()
+            },
+            function(data){                 
+               if(data.rta==""){
+                $("#otro").modal("hide");
+                $("#principal").hide();    
+                $("#terminado").show();    
+                        
+               }
+               else{
+                $("#alerta").show();
+                $("#finError").html(data.rta);
+               }                             
+            });  
+    }
+
     
 </script>    

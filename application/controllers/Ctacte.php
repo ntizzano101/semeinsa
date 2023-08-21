@@ -49,10 +49,16 @@ class Ctacte extends CI_Controller {
     
     public function opago($id_prov)
     {
+        if(!isset($this->session->id_opago)){
+            $this->session->id_opago=rand(1,10000)*-1;             
+        }
+        $id_opago= $this->session->id_opago;
         $this->load->model('ctacte_model');
         $data["proveedor"]=$this->ctacte_model->proveedor($id_prov);
         $data["deuda"]=$this->ctacte_model->comp_adeudados($id_prov);
         $data["medios_de_pago"]=$this->ctacte_model->medios_pago($id_prov);
+        $data["bancos"]=$this->ctacte_model->bancos();
+        $data["id_opago"]=$id_opago;
         $this->load->view('encabezado.php');
         $this->load->view('menu.php');
         $this->load->view('ctacte/opago.php',$data);
@@ -101,7 +107,9 @@ class Ctacte extends CI_Controller {
         if($t!=""){
             $fin='<tr><td><button type="button" class="btn btn-success" onClick="guardar()">Finalizar OP</button>
             </td>
-            <td colspan="7">'.$total.'</td>            
+            <td colspan="7">
+            <input type="hidden" id="total_fin" value="'.$total.'">                        
+            <span>'.$total.'</span></td>            
             </tr>'     ;
         }
         $data->tabla=$t.$fin;
@@ -151,6 +159,155 @@ public function ingreso_pago_cheque3(){
     $this->send($resp);     
     exit;    
 }
+//cheque propio
+public function ingreso_pago_cheque(){
+    $this->load->model('ctacte_model');       
+    $id_aux=$this->input->post('id_aux');    
+    $che_nro=$this->input->post('che_nro');    
+    $che_banco=$this->input->post('che_banco');    
+    $che_fecha=$this->input->post('che_fecha');    
+    $che_importe=$this->input->post('che_importe');      
+    $data = new stdClass();   
+    $data->rta="";    
+    if(!(abs($che_importe)< 9999999999 and $che_importe!='' and $che_importe!=0)){
+        $data->rta="Importe Del Cheque no es Valido";
+    }
+    if(strlen($che_nro)<5){$data->rta="Numero de Cheque No Valido";}
+    if($this->ctacte_model->verifico_numeracion($che_banco,$che_nro)>0){
+        $data->rta="Numero de cheque repetido";
+    }    
+    if($che_fecha==""){$data->rta="Fecha Incorrecta";} 
+    if($data->rta==""){
+        $this->load->model('ctacte_model');       
+        $cheque = new stdClass();
+        $cheque->id=0;
+        $cheque->numero=$che_nro;
+        $cheque->cliente='';
+        $cheque->banco='';
+        $cheque->propio=$che_banco;
+        $cheque->importe=$che_importe;
+        $cheque->vence=$che_fecha;
+        $cheque->emision='01-01-1900';
+        $ob2 = new stdClass();
+        $ob2->id=0;
+        $ob2->id_pago=$id_aux;
+        $ob2->monto=$che_importe;
+        $ob2->id_c_banco=$che_banco;
+        $ob2->c_banco_compro='';
+        $ob2->id_cheque=0;
+        $ob2->id_medio_pago=6;
+        $ob2->nro_comprobante='';
+        $ob2->observaciones='';
+        $x=$this->ctacte_model->ingreso_pago_cheque3($cheque,$ob2);                                             
+    }
+    $resp=json_decode(json_encode($data), true);  
+    $this->send($resp);     
+    exit;    
+}
+
+public function ingreso_pago_traf(){
+    $this->load->model('ctacte_model');       
+    $id_aux=$this->input->post('id_aux');    
+    $tra_comp=$this->input->post('tra_comprobante');    
+    $tra_banco=$this->input->post('tra_banco');        
+    $tra_importe=$this->input->post('tra_importe');      
+    $data = new stdClass();   
+    $data->rta="";    
+    if(!(abs($tra_importe)< 9999999999 and $tra_importe!='' and $tra_importe!=0)){
+        $data->rta="Importe De la transferencia  no es Valido";
+    }
+    if(strlen($tra_comp)<5){$data->rta="Comprobante invalido +5 caracteres";}        
+    if($data->rta==""){
+        $this->load->model('ctacte_model');               
+        $ob2 = new stdClass();  
+        $ob2->id=0;
+        $ob2->id_pago=$id_aux;
+        $ob2->monto=$tra_importe;
+        $ob2->id_c_banco=$tra_banco;
+        $ob2->c_banco_compro=$tra_comp;
+        $ob2->id_cheque=0;
+        $ob2->id_medio_pago=9;
+        $ob2->nro_comprobante='';
+        $ob2->observaciones='';
+        $x=$this->ctacte_model->ingreso_pago_otro($ob2); 
+    }   
+    $resp=json_decode(json_encode($data), true);  
+    $this->send($resp);     
+    exit;    
+}
+
+public function ingreso_pago_otro(){
+    $this->load->model('ctacte_model');       
+    $id_aux=$this->input->post('id_aux');    
+    $otr_comen=$this->input->post('otr_comen');        
+    $otr_importe=$this->input->post('otr_importe');      
+    $otr_tipo=$this->input->post('otr_tipo');      
+    $data = new stdClass();   
+    $data->rta="";    
+    if(!(abs($otr_importe)< 9999999999 and $otr_importe!='' and $otr_importe!=0)){
+        $data->rta="Importe  no es Valido";
+    }
+    if(strlen($otr_comen)<5){$data->rta="Definicion no Valida para comentario  +5 caracteres";}        
+    if($data->rta==""){
+        $this->load->model('ctacte_model');               
+        $ob2 = new stdClass();
+        $ob2->id=0;
+        $ob2->id_pago=$id_aux;
+        $ob2->monto=$otr_importe;
+        $ob2->id_c_banco=0;
+        $ob2->c_banco_compro=0;
+        $ob2->id_cheque=0;
+        $ob2->id_medio_pago=$otr_tipo;
+        $ob2->nro_comprobante=$otr_comen;
+        $ob2->observaciones='';     
+        $x=$this->ctacte_model->ingreso_pago_otro($ob2); 
+    }   
+    $resp=json_decode(json_encode($data), true);  
+    $this->send($resp);     
+    exit;    
+}
+    public function finalizar_opago(){
+        $data = new stdClass();   
+        $pago = new stdClass();   
+        $data->rta="";     
+        $this->load->model('ctacte_model');       
+        $id_aux=$this->input->post('id_aux');    
+        $compro=$this->input->post('compro');        
+        $id_proveedor=$this->input->post('id_proveedor');      
+        $opagofecha=$this->input->post('opagofecha');      
+        $total_fin=$this->input->post('total_fin');      
+        $filas=explode(";",$compro);        
+        $tpagado=0;
+        //controlo cada factura
+        foreach($filas as $fa){           
+            $f=explode("_",$fa);
+            //0->id comprobante //1->saldo adeudado //2-> es lo pagado
+            if(abs($f[1]) < abs($f[2])){$data->rta="no puede ingresar las que el saldo";}
+            $tpagado+=$f[2];    
+            $factura = new stdClass();   
+            $factura->id=0;
+            $factura->id_op=0;
+            $factura->id_factura=$f[0];
+            $factura->monto=$f[2];
+            $pago->facturas[]=$factura;
+        }               
+        //controlo que el total cancelando coincida
+        if($tpagado!=$total_fin){$data->rta="El Total cancelado ".$tpagado." debe coincidir con los Pagos" . $total_fin;}
+        if($opagofecha==""){$data->rta="La Fecha de la OP no puede ser vacia";}                          
+        if($data->rta==""){                      
+            $opago = new stdClass();   
+            $opago->fecha=$opagofecha;
+            $opago->id=0;
+            $opago->id_proveedor=$id_proveedor;
+            $opago->total=$total_fin;
+            $pago->opago=$opago;               
+            $x=$this->ctacte_model->finalizar_opago($pago,$id_aux);
+                
+        }       
+        $resp=json_decode(json_encode($data), true);  
+        $this->send($resp);     
+        exit;    
+    }
     public function borro_opago_aux(){
         $this->load->model('ctacte_model');       
         $id_aux=$this->input->post('id_aux');        

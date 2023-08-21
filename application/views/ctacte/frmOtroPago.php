@@ -13,6 +13,9 @@
                     </div>
                     
                     <div class="col-md-8">  
+                    <div class="row">    
+                            <p class="text-danger" id="otrError"></p>
+                        </div>   
                         
                        
                         
@@ -39,7 +42,7 @@
             <!-- Modal footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" id="bntIngEfe">Ingresar</button>
+                <button type="button" class="btn btn-success" id="bntIngOtr">Ingresar</button>
                     
                 </a>
             </div>

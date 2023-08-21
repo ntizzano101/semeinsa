@@ -27,13 +27,13 @@ class Ctacte_model extends CI_Model {
     //CTA CTE   
     public function listado($id_prov)
         {
-            $sql="SELECT DATE_FORMAT(op.fecha,'%d/%m/%Y') AS fecha, op.id, op.total, 0 AS debe, 0 AS haber".
+            $sql="SELECT DATE_FORMAT(op.fecha,'%d/%m/%Y') AS fecha,'O' as tt ,concat('Opago N°',op.id) as descrip, op.id, op.total, 0 AS debe, op.total AS haber".
                 " FROM opago op".
             " WHERE op.id_proveedor=?".	
             " UNION".
-            " SELECT DATE_FORMAT(fac.fecha,'%d/%m/%Y') AS fecha, fac.id_factura,".
-                " IF(cod.id_tipo_comp=3, fac.total , 0 ) AS total,".
-                " IF(cod.id_tipo_comp<>3, fac.total ,0 ) AS debe, 0 AS haber".
+            " SELECT DATE_FORMAT(fac.fecha,'%d/%m/%Y') AS fecha,'F'  ,concat(fac.letra,' (',fac.codigo_comp,') ' , fac.puerto,' - ',fac.numero), fac.id_factura,fac.total".
+                " ,IF(cod.id_tipo_comp=3, 0 , fac.total) AS debe,".
+                " IF(cod.id_tipo_comp=3 , fac.total ,0 ) AS haber".
             " FROM facturas fac".
             " INNER JOIN cod_afip cod on fac.cod_afip = cod.cod_afip".
             " WHERE fac.id_proveedor=?".
@@ -45,10 +45,11 @@ class Ctacte_model extends CI_Model {
     public function comp_adeudados($id_prov){
         $sql=" SELECT DATE_FORMAT(fac.fecha,'%d/%m/%Y') AS fecha, fac.id_factura
         ,fac.numero,fac.puerto,fac.codigo_comp,fac.tipo_comp,
-        fac.total , fac.total - ifnull(sum(opf.monto),0) as saldo,fac.letra
+        fac.total , abs(fac.total) - ifnull(sum(abs(opf.monto)),0) as saldo,fac.letra
         FROM facturas fac left join opago_facturas opf on fac.id_factura = opf.id_factura
         WHERE fac.id_proveedor=? 
         GROUP BY fac.fecha,fac.id_factura,fac.total,fac.numero,fac.puerto,fac.codigo_comp,fac.tipo_comp,fac.letra
+        HAVING saldo <> 0.00
         ORDER BY fac.fecha";    
     $retorno=$this->db->query($sql, array($id_prov))->result();
     return $retorno;
@@ -82,5 +83,31 @@ public function ingreso_pago_cheque3($ob,$ob2){
     $this->db->insert('opago_pago',$ob2);
 
 }
+public function bancos(){
+    $x=$this->db->query("select id, concat(banco,' ', cuenta) as banco from bancos")->result();
+    $j=array();
+    foreach($x as $y)
+        $j[$y->id]=$y->banco;
+    return $j;    
+}
+
+public function verifico_numeracion($che_banco,$che_nro){
+    //idbanco seria el campo propio
+  $x=$this->db->query("select count(*) as k from cheques where propio=? and numero=?",array($che_banco,$che_nro))->result();    
+  return $x[0]->k;
+}
+ public function ingreso_pago_otro($ob){
+    $this->db->insert('opago_pago',$ob);
+ }
+public function finalizar_opago($o,$id){
+    $this->db->insert('opago',$o->opago);
+    $o->opago->id=$this->db->insert_id();   
+    foreach($o->facturas as $f ){
+        $f->id_op=$o->opago->id;
+        $this->db->insert('opago_facturas',$f);
+    }
+    $this->db->query('update opago_pago set id_pago=? where id_pago=? ',array($o->opago->id,$id));
+}
+
 }
 ?>
