@@ -208,7 +208,7 @@ public function ingreso_pago_cheque(){
 public function ingreso_pago_traf(){
     $this->load->model('ctacte_model');       
     $id_aux=$this->input->post('id_aux');    
-    $tra_comp=$this->input->post('tra_comprobante');    
+    $tra_comp=$this->input->post('tra_comp');    
     $tra_banco=$this->input->post('tra_banco');        
     $tra_importe=$this->input->post('tra_importe');      
     $data = new stdClass();   
@@ -302,7 +302,7 @@ public function ingreso_pago_otro(){
             $opago->total=$total_fin;
             $pago->opago=$opago;               
             $x=$this->ctacte_model->finalizar_opago($pago,$id_aux);
-                
+
         }       
         $resp=json_decode(json_encode($data), true);  
         $this->send($resp);     
