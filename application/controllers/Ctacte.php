@@ -46,7 +46,17 @@ class Ctacte extends CI_Controller {
         $this->load->view('ctacte/ctacte.php',$data);
         
     }
-    
+    public function ctacteb($id,$id_prov)
+    {
+        $this->load->model('ctacte_model');
+        $this->ctacte_model->borrar_opago($id,$id_prov);
+        $data["ctactes"]=$this->ctacte_model->listado($id_prov);
+        $data["proveedor"]=$this->ctacte_model->proveedor($id_prov);
+        $this->load->view('encabezado.php');
+        $this->load->view('menu.php');
+        $this->load->view('ctacte/ctacte.php',$data);
+        
+    }
     public function opago($id_prov)
     {
         if(!isset($this->session->id_opago)){
@@ -312,7 +322,57 @@ public function ingreso_pago_otro(){
         $this->load->model('ctacte_model');       
         $id_aux=$this->input->post('id_aux');        
         $x=$this->ctacte_model->borro_opago_aux($id_aux);                                             
-    }         
+    }
+    
+    public function ver_opago(){
+        $this->load->model('ctacte_model');       
+        $id=$this->input->post('id');
+        $data = new stdClass();  
+        $data->tabla="";              
+        $x=$this->ctacte_model->ver_opago($id);                                             
+        $t="";        
+        $total=0;
+        //datos de la op               
+        foreach($x->opago_facturas as $y){          
+            $total=$total+$y->monto;
+            $t=$t.'<tr>             
+             <td>'.$y->fecha.'</td>
+             <td>'.$y->letra.'('.$y->codigo_comp .')'. $y->puerto. '-'. $y->numero .' </td>';
+            if($y->monto > 0 ) {$t=$t.'<td>0</td><td>'.$y->monto.'</td>';}
+            else{$t=$t.'<td>'.abs($y->monto).'</td><td>0</td>';}            
+             $t=$t.'<td>'.$total.'</td></tr>';
+        }     
+        foreach($x->opago_pagos as $y){          
+            $total=$total-$y->monto;
+            $t=$t.'<tr>             
+             <td colspan="2">'.$y->mpago.' </td>';
+            if($y->monto < 0 ) {$t=$t.'<td>0</td><td>'.$y->monto.'</td>';}
+            else{$t=$t.'<td>'.abs($y->monto).'</td><td>0</td>';}            
+             $t=$t.'<td>'.$total.'</td></tr>';
+        }
+        $t=$t.'<tr><td colspan="3">Orden de Pago Nro.'.$x->opago[0]->id.'</td>
+        <td colspan="2">Fecha.'.$x->opago[0]->fecha.'</td>
+        </tr>';          
+        $data->tabla=$t;
+        $resp=json_decode(json_encode($data), true);  
+        $this->send($resp);     
+        exit;
+    }
+    public function ver_factura_compra(){
+        $this->load->model('ctacte_model');       
+        $id=$this->input->post('id');
+        $data = new stdClass();  
+        $data->tabla="";              
+        $x=$this->ctacte_model->ver_factura_compra($id);                                                     
+        $t="<p><strong>Factura</strong> ".$x[0]->letra ."(".$x[0]->codigo_comp.") " .$x[0]->puerto. " - " .$x[0]->numero ."</p>";  
+        $t=$t."<p><strong>Proveedor</strong> ".$x[0]->proveedor."</p>";  
+        $t=$t."<p><strong>CUIT</strong> ".$x[0]->cuit."</p>";  
+        $t=$t."<p><strong>TOTAL</strong> ".$x[0]->total."</p>";  
+        $data->tabla=$t;
+        $resp=json_decode(json_encode($data), true);  
+        $this->send($resp);     
+        exit;      
+    }
     private function send($array) {
 
         if (!is_array($array)) return false;
