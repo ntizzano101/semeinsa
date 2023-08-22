@@ -27,13 +27,13 @@ class Ctacte_model extends CI_Model {
     //CTA CTE   
     public function listado($id_prov)
         {
-            $sql="SELECT DATE_FORMAT(op.fecha,'%d/%m/%Y') AS fecha,'O' as tt ,concat('Opago N°',op.id) as descrip, op.id, op.total, 0 AS debe, op.total AS haber".
+            $sql="SELECT DATE_FORMAT(op.fecha,'%d/%m/%Y') AS fecha,'O' as tt ,concat('Opago N°',op.id) as descrip, op.id, op.total, 0 AS debe, op.total AS haber,op.fecha as fe_orden".
                 " FROM opago op".
             " WHERE op.id_proveedor=?".	
             " UNION".
             " SELECT DATE_FORMAT(fac.fecha,'%d/%m/%Y') AS fecha,'F'  ,concat(fac.letra,' (',fac.codigo_comp,') ' , fac.puerto,' - ',fac.numero), fac.id_factura,fac.total".
                 " ,IF(cod.id_tipo_comp=3, 0 , fac.total) AS debe,".
-                " IF(cod.id_tipo_comp=3 , fac.total ,0 ) AS haber".
+                " IF(cod.id_tipo_comp=3 , fac.total ,0 ) AS haber,fac.fecha as fe_orden".
             " FROM facturas fac".
             " INNER JOIN cod_afip cod on fac.cod_afip = cod.cod_afip".
             " WHERE fac.id_proveedor=?".
@@ -108,6 +108,39 @@ public function finalizar_opago($o,$id){
     }
     $this->db->query('update opago_pago set id_pago=? where id_pago=? ',array($o->opago->id,$id));
 }
+public function borrar_opago($id,$id_proveedor){
+    $this->db->query('delete from opago_pago  where id_pago=? ',array($id));
+    $this->db->query('delete from opago  where id=? ',array($id));
+    $this->db->query('delete from opago_facturas  where id_op=? ',array($id));
+}
+public function ver_opago($id){
 
+    $sql="SELECT DATE_FORMAT(fecha,'%d/%m/%Y') AS fecha,
+     id,total from opago where id=?";
+    $rta = new stdClass();  
+    $rta->opago=$this->db->query($sql,array($id))->result();
+
+    $sql="SELECT DATE_FORMAT(fac.fecha,'%d/%m/%Y') AS fecha,
+      fac.letra,fac.numero,fac.puerto,fac.codigo_comp,fac.tipo_comp,op.monto
+      from facturas fac inner join opago_facturas op on fac.id_factura=op.id_factura where op.id_op=?";    
+    $rta->opago_facturas=$this->db->query($sql,array($id))->result();
+
+    $sql="select op.*,b.banco,b.cuenta,c.propio,c.vence,c.numero ,m.mpago
+    from opago_pago op inner join mpagos m on op.id_pago=m.id 
+    left join bancos b on op.id_c_banco=b.id 
+    left join cheques c on c.id=op.id_cheque
+    where op.id_pago=?";
+    $rta->opago_pagos=$this->db->query($sql,array($id))->result();
+
+    return($rta);
+
+}
+ public function ver_factura_compra($id){
+       return($this->db->query("select  DATE_FORMAT(fac.fecha,'%d/%m/%Y') AS fecha
+       ,fac.letra,fac.numero,fac.puerto,fac.codigo_comp,fac.tipo_comp,fac.total,
+       p.cuit,p.proveedor
+       from facturas fac inner join proveedores p on p.id=fac.id_proveedor
+         where id_factura=?",array($id))->result());
+    }
 }
 ?>
