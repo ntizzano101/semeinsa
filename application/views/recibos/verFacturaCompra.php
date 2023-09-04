@@ -2,7 +2,7 @@
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title">Factura De Compra</h1>
+              <h1 class="modal-title">Factura De Venta</h1>
               <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
 
@@ -13,6 +13,7 @@
                     
                     </div>
                 </div>
+
                 <div class="row">
                     <div class="col-12 col-md-12 col-lg-12">
                     <table class="table">
@@ -24,7 +25,7 @@
                               <th>Total</th>                              
                             </tr>
                       </thead>
-                      <tbody id="tablafac">  
+                      <tbody id="tablarec">  
                       </tbody>   
                       </table>
                     </div>
