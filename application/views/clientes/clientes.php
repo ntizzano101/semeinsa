@@ -50,7 +50,11 @@
                                         </a>
                                         &nbsp; &nbsp;
                                         <a class="btn-default fa fa-pencil" title="Editar" 
-                                            href="<?php echo base_url(); ?>clientes/editar/<?=$clie->id?>">  
+                                            href="<?php echo base_url(); ?>clientes/editar/<?=$clie->id?>">                                        
+                                        </a>
+                                        &nbsp; &nbsp;
+                                        <a class="btn-default fa fa-book" title="CtaCte" 
+                                            href="<?php echo base_url(); ?>recibos/ctacte/<?=$clie->id?>">  
                                         </a>
                                     <?php if (!($clie->baja)){ ?>
                                         &nbsp; &nbsp;

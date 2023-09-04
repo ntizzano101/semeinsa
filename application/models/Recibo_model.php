@@ -1,5 +1,5 @@
 <?php
-class Ctacte_model extends CI_Model {
+class Recibo_model extends CI_Model {
     
     public function __construct()
     {
@@ -8,13 +8,13 @@ class Ctacte_model extends CI_Model {
     }
     
     //LISTADOS VARIOS
-     public function proveedor($id)
+     public function cliente($id)
         {
         $sql="SELECT a.*, d.cond_iva AS cdiva_nombre,".
             " IFNULL(b.razon_soc, '') AS empresa_nombre,".
             " IFNULL(c.etiqueta, '') AS etiqueta_nombre,".
             " DATE_FORMAT(a.baja, '%d/%m/%Y') AS fecha_baja".  
-            " FROM proveedores a".
+            " FROM clientes a".
             " LEFT JOIN empresas b ON a.id_empresa=b.id_empresa".
             " LEFT JOIN etiquetas c ON a.id_etiqueta=c.id".    
             " INNER JOIN cdiva d ON a.iva=d.codigo".    
@@ -27,16 +27,16 @@ class Ctacte_model extends CI_Model {
     //CTA CTE   
     public function listado($id_prov)
         {
-            $sql="SELECT DATE_FORMAT(op.fecha,'%d/%m/%Y') AS fecha,'O' as tt ,concat('Opago N°',op.id) as descrip, op.id, op.total, 0 AS debe, op.total AS haber,op.fecha as fe_orden".
+            $sql="SELECT DATE_FORMAT(op.fecha,'%d/%m/%Y') AS fecha,'O' as tt ,concat('Recibo N°',op.id) as descrip, op.id, op.total, 0 AS debe, op.total AS haber,op.fecha as fe_orden".
                 " FROM opago op".
-            " WHERE op.id_proveedor=?".	
+            " WHERE op.id_cliente=?".	
             " UNION".
             " SELECT DATE_FORMAT(fac.fecha,'%d/%m/%Y') AS fecha,'F'  ,concat(fac.letra,' (',fac.codigo_comp,') ' , fac.puerto,' - ',fac.numero), fac.id_factura,fac.total".
                 " ,IF(cod.id_tipo_comp=3, 0 , fac.total) AS debe,".
                 " IF(cod.id_tipo_comp=3 , fac.total ,0 ) AS haber,fac.fecha as fe_orden".
             " FROM facturas fac".
             " INNER JOIN cod_afip cod on fac.cod_afip = cod.cod_afip".
-            " WHERE fac.id_proveedor=?".
+            " WHERE fac.id_cliente=?".
             " ORDER BY fecha";
             
             $retorno=$this->db->query($sql, array($id_prov, $id_prov))->result();
@@ -47,7 +47,7 @@ class Ctacte_model extends CI_Model {
         ,fac.numero,fac.puerto,fac.codigo_comp,fac.tipo_comp,
         fac.total , abs(fac.total) - ifnull(sum(abs(opf.monto)),0) as saldo,fac.letra
         FROM facturas fac left join opago_facturas opf on fac.id_factura = opf.id_factura
-        WHERE fac.id_proveedor=? 
+        WHERE fac.id_cliente=? 
         GROUP BY fac.fecha,fac.id_factura,fac.total,fac.numero,fac.puerto,fac.codigo_comp,fac.tipo_comp,fac.letra
         HAVING saldo <> 0.00
         ORDER BY fac.fecha";    
@@ -55,7 +55,7 @@ class Ctacte_model extends CI_Model {
     return $retorno;
     }           
     public function medios_pago(){        
-        return $this->db->query("SELECT * from mpagos order by id ")->result();            
+        return $this->db->query("SELECT * from mpagos where id <> 6 order by id ")->result();            
     }           
           
     public function ingreso_pago_efectivo($importe,$comentario,$id_aux){    
@@ -99,7 +99,7 @@ public function verifico_numeracion($che_banco,$che_nro){
  public function ingreso_pago_otro($ob){
     $this->db->insert('opago_pago',$ob);
  }
-public function finalizar_opago($o,$id){
+public function finalizar_opago($o,$id){   
     $this->db->insert('opago',$o->opago);
     $o->opago->id=$this->db->insert_id();   
     foreach($o->facturas as $f ){
@@ -139,13 +139,12 @@ public function ver_opago($id){
     $rta = new stdClass();  
     $rta->fac=$this->db->query("select  DATE_FORMAT(fac.fecha,'%d/%m/%Y') AS fecha
        ,fac.letra,fac.numero,fac.puerto,fac.codigo_comp,fac.tipo_comp,fac.total,
-       p.cuit,p.proveedor
-       from facturas fac inner join proveedores p on p.id=fac.id_proveedor
+       p.cuit,p.cliente
+       from facturas fac inner join clientes p on p.id=fac.id_cliente
          where id_factura=?",array($id))->result();
-         $rta->det=$this->db->query("select * from factura_items
-         where id_factura=?",array($id))->result();     
-       return $rta;
-        
+    $rta->det=$this->db->query("select * from factura_items
+      where id_factura=?",array($id))->result();     
+    return $rta;
     }
 }
 ?>
