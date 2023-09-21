@@ -267,6 +267,37 @@ class Ajax extends CI_Controller {
        $this->send($resp);        
         
    }
+   public function comprobantecambiar() {
+        $id=$this->input->post('id');          
+        $this->load->model('ventas_model');           
+        $rta=$this->ventas_model->buscar_comprobante($id);  
+        $data = new stdClass();          
+        $data->numero= $rta[0]->numero;     
+        $data->id_factura= $rta[0]->id_factura; 
+        $resp=json_decode(json_encode($data), true);
+        $this->send($resp);            
+    }
+    public function validarnro() {
+        $id=$this->input->post('id');          
+        $numero=$this->input->post('numero');          
+        $data = new stdClass();       
+        if(!(is_numeric($numero) and $numero>0 and $numero < 99999999)){
+            $data->mensaje="El Valor $numero no es correcto";
+            $data->numero=0;
+        }
+        else{
+            $this->load->model('ventas_model');                                   
+            $a=$this->ventas_model->validar_comprobante($id,$numero);                                 
+            $fact=$this->ventas_model->venta($id);                                                             
+            $data->numero= $numero;
+            $data->id_factura=$fact->id_factura;                      
+            $data->renglon=$fact->nombre . " " .  str_pad($fact->puerto,5,"0",STR_PAD_LEFT)."-".  str_pad($fact->numero,8,"0",STR_PAD_LEFT) ;     
+            $data->mensaje='';
+        }                  
+        $resp=json_decode(json_encode($data), true);
+        $this->send($resp);            
+    } 
+
    public function medio_pago() {
                 $id=$this->input->post('id');          
                 $this->load->model('ventas_model');           

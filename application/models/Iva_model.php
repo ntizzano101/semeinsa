@@ -1,5 +1,5 @@
 <?php
-class Ventas_model extends CI_Model {
+class Iva_model extends CI_Model {
     
     public function __construct()
     {
@@ -9,10 +9,14 @@ class Ventas_model extends CI_Model {
     
     //LISTADOS VARIOS
     
-    public function lista_clientes()
+    public function compras($periodo,$empresa)
         {
-            $sql="SELECT id, cliente FROM clientes order by cliente";
-            $retorno=$this->db->query($sql)->result();
+            $sql="select p.proveedor,p.cuit,f.*,c.nombre,DATE_FORMAT(f.fecha, '%d/%m/%Y') AS fechaf from facturas f 
+            inner join proveedores p on f.id_proveedor=p.id
+            inner join cod_afip c on c.id=f.id_tipo_comp
+            where f.periodo_iva=? and f.id_empresa=? order by fecha 
+            ";
+            $retorno=$this->db->query($sql,array($periodo,$empresa))->result();
             return $retorno;
         } 
         
