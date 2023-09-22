@@ -8,7 +8,49 @@ class Iva_model extends CI_Model {
     }
     
     //LISTADOS VARIOS
+    public function plan()
+    {
+        $sql="select * from plan order by cuenta";
+        $retorno=$this->db->query($sql)->result();
+        return $retorno;
+    } 
     
+    public function plan_buscar($cuenta)
+    {
+        $cuenta = "%".$cuenta."%";
+        $sql="select * from plan  where cuenta like ? or nombre like ? order by cuenta";
+        $retorno=$this->db->query($sql,array($cuenta,$cuenta))->result();
+        return $retorno;
+    } 
+
+    public function plan_id($id)
+    {        
+        $sql="select * from plan  where id=?";
+        $retorno=$this->db->query($sql,array($id))->result();
+        return $retorno[0];
+    } 
+
+    public function plan_update($plan)
+    {        
+        $this->db->where('id', $plan->id);
+        $this->db->update('plan', $plan);
+    } 
+
+    public function plan_insert($plan)
+     {    
+        
+        $this->db->insert('plan', $plan);
+    } 
+
+    public function plan_delete($id)
+    {        
+        $this->db->query("delete from plan where id=?",array($id));
+    } 
+    public function plan_existe($cuenta,$id){
+        $sql="select count(*) as g from plan  where cuenta=? and id<>?";
+        $retorno=$this->db->query($sql,array($cuenta,$id))->result();
+        return $retorno[0]->g>0;
+    }
     public function compras($periodo,$empresa)
         {
             $sql="select p.proveedor,p.cuit,f.*,c.nombre,DATE_FORMAT(f.fecha, '%d/%m/%Y') AS fechaf from facturas f 
@@ -19,7 +61,16 @@ class Iva_model extends CI_Model {
             $retorno=$this->db->query($sql,array($periodo,$empresa))->result();
             return $retorno;
         } 
-        
+        public function ventas($periodo,$empresa)
+        {
+            $sql="select cl.cliente,cl.cuit,f.*,c.nombre,DATE_FORMAT(f.fecha, '%d/%m/%Y') AS fechaf from facturas f 
+            inner join clientes cl on cl.id=f.id_cliente
+            inner join cod_afip c on c.id=f.id_tipo_comp
+            where f.periodo_iva=? and f.id_empresa=? order by fecha 
+            ";
+            $retorno=$this->db->query($sql,array($periodo,$empresa))->result();
+            return $retorno;
+        } 
     public function lista_empresas()
         {
             $sql="SELECT id_empresa, razon_soc FROM empresas";

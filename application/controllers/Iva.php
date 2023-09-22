@@ -43,7 +43,7 @@ class Iva extends CI_Controller {
         $this->load->model('iva_model');
         $periodo=$this->input->post('periodo');
         $empresa=$this->input->post('empresa');
-        if($periodo==''){$periodo=date('202304');}
+        if($periodo==''){$periodo=date('Ym');}
         if($empresa==''){$empresa=1;}
         $data["iva"]=$this->iva_model->compras($periodo,$empresa);
         $data["periodo"]=$periodo;
@@ -56,7 +56,12 @@ class Iva extends CI_Controller {
     {
        
         $this->load->model('iva_model');
-        $data["iva"]=$this->iva_model->ventas($mes,$anio);
+        $periodo=$this->input->post('periodo');
+        $empresa=$this->input->post('empresa');
+        if($periodo==''){$periodo=date('Ym');}
+        if($empresa==''){$empresa=1;}
+        $data["iva"]=$this->iva_model->ventas($periodo,$empresa);
+        $data["periodo"]=$periodo;
         $this->load->view('encabezado.php');
         $this->load->view('menu.php');
         $this->load->view('iva/iva_ventas.php',$data);
@@ -73,7 +78,124 @@ class Iva extends CI_Controller {
         $this->load->view('iva/posicion_iva.php',$data);
      
     }
+    
+    public function plan_de_cuentas()
+    {
+       
+        $this->load->model('iva_model');
+        $data["iva"]=$this->iva_model->plan();        
+        $this->load->view('encabezado.php');
+        $this->load->view('menu.php');
+        $this->load->view('iva/plan.php',$data);
      
+    }
+    public function plan_de_cuentas_buscar()
+    {
+       
+        $this->load->model('iva_model');
+        $cuenta=$this->input->post('cuenta');
+        $data["cuenta"]=$cuenta;
+        $data["iva"]=$this->iva_model->plan_buscar($cuenta);
+        $this->load->view('encabezado.php');
+        $this->load->view('menu.php');
+        $this->load->view('iva/plan.php',$data);
+     
+    }
+
+    public function plan_id()
+    {      
+        $id=$this->input->post('id');
+        $this->load->model('iva_model');      
+        if($id>0){                        
+            $data=$this->iva_model->plan_id($id);
+            $resp=json_decode(json_encode($data), true);
+            $this->send($resp);    
+        }    
+    }
+
+    public function plan_delete()
+    {      
+        $id=$this->input->post('id');
+        $this->load->model('iva_model');      
+        if($id>0){                        
+            $this->iva_model->plan_delete($id);            
+        }    
+    }
+    
+    public function plan_editar($id)
+    {      
+        $this->load->model('iva_model');      
+        if($id>0){            
+            $data["cuenta"]=$this->iva_model->plan_id($id);
+            $this->load->view('encabezado.php');
+            $this->load->view('menu.php');
+            $this->load->view('iva/plan_editar.php',$data);
+           
+        }    
+    }
+    public function plan_borrar($id)
+    {
+        
+        $this->load->model('iva_model');
+        $cuenta=$this->input->post('cuenta');
+        $data["cuenta"]=$cuenta;
+        $data["iva"]=$this->iva_model->plan_buscar($cuenta);
+        $this->load->view('encabezado.php');
+        $this->load->view('menu.php');
+        $this->load->view('iva/plan.php',$data);
+     
+    }
+    
+    public function verificar_plan()
+    {
+        $data = new stdClass();     
+        $data->error="";
+        $data->mensaje="";
+        $this->load->model('iva_model');
+        $id=strtoupper($this->input->post('id'));
+        $cuenta=strtoupper($this->input->post('cuenta'));
+        $nombre=substr(strtoupper($this->input->post('nombre')),0,60);
+        $imputable=strtoupper($this->input->post('imputable'));
+        if(strlen(trim($cuenta))!=10){
+            $data->mensaje="Longitud de la cuenta debe ser 10";
+            $data->error="errCuenta";
+        }
+        elseif(!(is_numeric($cuenta))){
+            $data->mensaje="La Cuenta Solo Debe Tener Numeros";
+            $data->error="errCuenta";
+        }        
+        elseif($this->iva_model->plan_existe($cuenta,$id)){
+            $data->mensaje="La Cuenta Ya Existe";
+            $data->error="errCuenta";
+        }
+        elseif(!($imputable=="S" or $imputable=="N"))
+        {
+            $data->mensaje="Imputable S/N";
+            $data->error="errImputable";
+        }  
+        elseif(trim($nombre)=="")
+        {
+            $data->mensaje="La Cuenta Debe Tener un Nombre";
+            $data->error="errNombre";
+        } 
+        else{
+            $plan = new stdClass();   
+            $plan->id=$id;
+            $plan->nombre=$nombre;
+            $plan->cuenta=$cuenta;
+            $plan->imputable=$imputable;
+            if($id>0)
+                $this->iva_model->plan_update($plan);     
+            else   
+                $this->iva_model->plan_insert($plan);     
+        }       
+        $resp=json_decode(json_encode($data), true);
+        $this->send($resp);    
+     
+    }
+    
+
+
     private function send($array) {
 
         if (!is_array($array)) return false;
