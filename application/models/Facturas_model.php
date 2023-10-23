@@ -11,7 +11,7 @@ class Facturas_model extends CI_Model {
     
     public function lista_proveedores()
         {
-            $sql="SELECT id, proveedor FROM proveedores";
+            $sql="SELECT id, proveedor FROM proveedores a order by a.proveedor ";
             $retorno=$this->db->query($sql)->result();
             return $retorno;
         } 
@@ -38,7 +38,7 @@ class Facturas_model extends CI_Model {
             $sql="SELECT a.*, b.cond_iva".
                 " FROM proveedores a".
                 " INNER JOIN cdiva b ON a.iva=b.codigo". 
-                " WHERE a.id=?";
+                " WHERE a.id=? ";
             $retorno=$this->db->query($sql, array($id))->row();
             return $retorno;
         }        
@@ -128,12 +128,17 @@ class Facturas_model extends CI_Model {
             " WHERE a.id_factura=?";
         $retorno=$this->db->query($sql, array($id))->row();
         return $retorno;
-        }    
-    
+        }       
+    public function control_numeracion($obj){
+        $sql="select letra from facturas where id_empresa=? and puerto=? and numero=? and id_tipo_comp=? limit 1";
+        $retorno=$this->db->query($sql, array($obj->empresa,$obj->factnro1,$obj->factnro2,$obj->cod_afip))->row();
+        return $retorno;
+    }
     public function guardar($obj)
-        {
+        {       
         //$obj->periva=trim($this->input->post('periva'));Falta
         //$usuario="21890143";
+        // controlo que no exista prov + empresa + pto + nro + tipo        
         $usuario=$_SESSION["id"];
         if(!(is_numeric($obj->intImpNeto))){$obj->intImpNeto="0.00";}
         if(!(is_numeric($obj->intIva))){$obj->intIva="0.00";}
