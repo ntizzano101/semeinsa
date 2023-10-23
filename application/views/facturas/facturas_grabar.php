@@ -9,7 +9,7 @@
             <div class="panel panel-primary">
                 <div class="panel-heading">Factura - Ingresar</div>
                 <div class="panel-body">
-                    <form role="search" method="POST" action="<?php echo base_url(); ?>facturas/grabar">
+                    <form role="search" method="POST"  action="<?php echo base_url(); ?>facturas/grabar">
                         <div class="row">
                             <div class="col-md-6">
                                 
@@ -199,7 +199,7 @@
                             <div class="col-md-6">
                             <label for="intImpNeto">Importe Neto</label>
                             <input type="text" name="intImpNeto" id="intImpNeto" 
-                                value="<?=$factura->intImpNeto?>" class="form-control"/>
+                                value="<?= $factura->intImpNeto==''?'0':$factura->intImpNeto?>" class="form-control"/>
                             <div id="errIntImpNeto">
                                 <small><font color="red">
                                     <?php if (isset($error->intImpNeto)){echo $error->intImpNeto;}?> 
@@ -209,7 +209,7 @@
                             
                             <label for="intIva">IVA</label>
                             <input type="text" name="intIva" id="intIva" 
-                                value="<?=$factura->intIva?>" class="form-control"/>
+                                value="<?= $factura->intIva==''?'0':$factura->intIva ?>" class="form-control"/>
                             <div id="errIntIva">
                                 <small><font color="red">
                                     <?php if (isset($error->intIva)){echo $error->intIva;}?> 
@@ -218,7 +218,9 @@
                             <br>
                             
                             <label for="intPerIngB">Percepción Ing. Brutos</label>
-                            <input type="text" name="intPerIngB" id="intPerIngB" class="form-control"/>
+                            <input type="text" name="intPerIngB" 
+                            value="<?= $factura->intPerIngB==''?'0':$factura->intPerIngB ?>"
+                            id="intPerIngB" class="form-control"/>
                             <div id="errIntPerIngB">
                                 <small><font color="red">
                                     <?php if (isset($error->intPerIngB)){echo $error->intPerIngB;}?> 
@@ -227,7 +229,9 @@
                             <br>
                             
                             <label for="intPerIva">Percepción IVA</label>
-                            <input type="text" name="intPerIva" id="intPerIva" class="form-control"/>
+                            <input type="text" name="intPerIva" id="intPerIva" 
+                            value="<?= $factura->intPerIva==''?'0':$factura->intPerIva ?>"
+                            class="form-control"/>
                             <div id="errIntPerIva">
                                 <small><font color="red">
                                     <?php if (isset($error->intPerIva)){echo $error->intPerIva;}?> 
@@ -236,7 +240,9 @@
                             <br>
                             
                             <label for="intPerGnc">Percepción Ganancias</label>
-                            <input type="text" name="intPerGnc" id="intPerGnc" class="form-control"/>
+                            <input type="text" name="intPerGnc" 
+                            value="<?= $factura->intPerGnc==''?'0':$factura->intPerGnc ?>"
+                            id="intPerGnc" class="form-control"/>
                             <div id="errIntPerGnc">
                                 <small><font color="red">
                                     <?php if (isset($error->intPerGnc)){echo $error->intPerGnc;}?> 
@@ -245,7 +251,9 @@
                             <br>
                             
                             <label for="intPerStaFe">Percepción Santa Fé</label>
-                            <input type="text" name="intPerStaFe" id="intPerStaFe" class="form-control"/>
+                            <input type="text" name="intPerStaFe" 
+                            value="<?= $factura->intPerStaFe==''?'0':$factura->intPerStaFe ?>"
+                            id="intPerStaFe" class="form-control"/>
                             <div id="errIntPerStaFe">
                                 <small><font color="red">
                                     <?php if (isset($error->errIntPerStaFe)){echo $error->errIntPerStaFe;}?> 
@@ -254,7 +262,9 @@
                             <br>
                             
                             <label for="intImpExto">Importe exento</label>
-                            <input type="text" name="intImpExto" id="intImpExto" class="form-control"/>
+                            <input type="text" name="intImpExto" id="intImpExto" 
+                            value="<?= $factura->intImpExto==''?'0':$factura->intImpExto ?>"
+                            class="form-control"/>
                             <div id="errIntImpExto">
                                 <small><font color="red">
                                     <?php if (isset($error->errIntImpExto)){echo $error->errIntImpExto;}?> 
@@ -263,7 +273,9 @@
                             <br>
                             
                             <label for="intConNoGrv">Conc. no Gravados</label>
-                            <input type="text" name="intConNoGrv" id="intConNoGrv" class="form-control"/>
+                            <input type="text" name="intConNoGrv" id="intConNoGrv" 
+                            value="<?= $factura->intConNoGrv==''?'0':$factura->intConNoGrv ?>"
+                            class="form-control"/>
                             <div id="errIntConNoGrv">
                                 <small><font color="red">
                                     <?php if (isset($error->intConNoGrv)){echo $error->intConNoGrv;}?> 
@@ -291,7 +303,8 @@
                         <br><br>
                         
                         <input type="hidden" id="items" name="items" value='<?=$factura->items?>'>    
-                        <button type="submit" class="btn btn-primary">Grabar</button>
+                        <button type="submit" id="confirmar" class="btn btn-primary">Grabar</button>
+                        <button  id="comprobar" class="btn btn-warning">Comprobar</button>
                     
                     </form>  
                 </div>
@@ -420,6 +433,8 @@ $(document).ready(function(){
     $('#factnro1').mask('9999');
     $('#factnro2').mask('99999999');
     $('#periva').mask('99/9999');
+    $('#confirmar').show();
+    $('#comprobar').hide();
     
     $.post(CFG.url + 'Ajax/busca_proveedor/',
         {id:$("#proveedor").val()},
@@ -618,5 +633,6 @@ function calcTotal(){
     $("#intTotal").val(total);    
     
 }
-    
+
+
 </script>

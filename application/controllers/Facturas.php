@@ -74,6 +74,9 @@ class Facturas extends CI_Controller {
         $obj->intPerIva="";
         $obj->intPerGnc="";
         $obj->intConNoGrv="";
+        $obj->intImpExto="";
+        $obj->intPerStaFe="";
+
         $obj->obs="";
         $obj->items="[]";
         
@@ -92,6 +95,7 @@ class Facturas extends CI_Controller {
         
         
         //$this->load->library('Funciones');
+        $falla=false; 
         
         $obj = new stdClass();
         $obj->empresa=$this->input->post('empresa');
@@ -114,48 +118,47 @@ class Facturas extends CI_Controller {
         $obj->obs=trim($this->input->post('obs'));
         $obj->items=trim($this->input->post('items'));
         
-        
-        ##Validar
+        //Valido numeracion
+      
         
         $error= new stdClass();
-        if($obj->empresa==""){$error->empresa="No puede estar vacío";}
-        if($obj->proveedor==""){$error->prov="No puede estar vacío";}
-        if( !(is_numeric($obj->factnro1))){$error->factnro="Deben ser un número";}
-        if( !(is_numeric($obj->factnro2))){$error->factnro="Deben ser un número";}
-        if($obj->fecha==""){$error->fecha="No puede estar vacío";}
+        if($obj->empresa==""){$error->empresa="No puede estar vacío";$falla=true;}
+        if($obj->proveedor==""){$error->prov="No puede estar vacío";$falla=true;}
+        if( !(is_numeric($obj->factnro1))){$error->factnro="Deben ser un número";$falla=true;}
+        if( !(is_numeric($obj->factnro2))){$error->factnro="Deben ser un número";$falla=true;}
+        $res=$this->facturas_model->control_numeracion($obj);
+        if(!$res==''){$error->factnro="el nro de comprobante ya existe";$falla=true;}        
+        ##Validar
+        if($obj->fecha==""){$error->fecha="No puede estar vacío";$falla=true;}
         if($obj->periva==""){
-            $error->periva="No puede estar vacío";
+            $error->periva="No puede estar vacío";$falla=true;
         }else{
             if(strpos($obj->periva, "/")===false){
-                $error->periva="El separador debe ser /";
+                $error->periva="El separador debe ser /";$falla=true;
             }else{
                 list($prM,$prA)= explode("/", $obj->periva);
                 if (!(is_numeric($prA))){
-                    $error->periva="El separador debe ser /";
+                    $error->periva="El separador debe ser /";$falla=true;
                 }elseif ($prM < 1 || $prM > 12){
-                    $error->periva="El mes es incorrecto";
+                    $error->periva="El mes es incorrecto";$falla=true;
                 }elseif ($prA < date("Y") || ($prA == date("Y") && $prM < date("m") )  ){
-                    $error->periva="El período no puede ser menor al mes/año actual";
+                    $error->periva="El período no puede ser menor al mes/año actual";$falla=true;
                 }
             }
         }
         
-        if($obj->cod_afip==""){$error->cod_afip="No puede estar vacío";}
-        if($obj->formaPago==""){$error->formaPago="No puede estar vacío";}
-        if(!(is_numeric($obj->intImpNeto))){$error->intImpNeto="Debe ser un número";}
-        if(!(is_numeric($obj->intIva))){$error->intIva="Debe ser un número";}
-        if(!(is_numeric($obj->intPerIngB))){$error->intPerIngB="Debe ser un número";}
-        if(!(is_numeric($obj->intPerIva))){$error->intPerIva="Debe ser un número";}
-        if(!(is_numeric($obj->intPerGnc))){$error->intPerGnc="Debe ser un número";}
-        if(!(is_numeric($obj->intPerStaFe))){$error->intPerStaFe="Debe ser un número";}
-        if(!(is_numeric($obj->intImpExto))){$error->intImpExto="Debe ser un número";}
-        if(!(is_numeric($obj->intConNoGrv))){$error->intConNoGrv="Debe ser un número";}
+        if($obj->cod_afip==""){$error->cod_afip="No puede estar vacío";$falla=true;}
+        if($obj->formaPago==""){$error->formaPago="No puede estar vacío";$falla=true;}
+        if(!(is_numeric($obj->intImpNeto))){$error->intImpNeto="Debe ser un número";$falla=true;}
+        if(!(is_numeric($obj->intIva))){$error->intIva="Debe ser un número";$falla=true;}
+        if(!(is_numeric($obj->intPerIngB))){$error->intPerIngB="Debe ser un número";$falla=true;}
+        if(!(is_numeric($obj->intPerIva))){$error->intPerIva="Debe ser un número";$falla=true;}
+        if(!(is_numeric($obj->intPerGnc))){$error->intPerGnc="Debe ser un número";$falla=true;}
+        if(!(is_numeric($obj->intPerStaFe))){$error->intPerStaFe="Debe ser un número";$falla=true;}
+        if(!(is_numeric($obj->intImpExto))){$error->intImpExto="Debe ser un número";$falla=true;}
+        if(!(is_numeric($obj->intConNoGrv))){$error->intConNoGrv="Debe ser un número";$falla=true;}
         
-        
-        $falla=true; 
-        
-        //if(count((array)$error)==0){//Validacion OK
-        if(true){
+        if(!$falla){
             $resultado=$this->facturas_model->guardar($obj);
             if ($resultado["estado"]=="0"){
                 $falla=false;
